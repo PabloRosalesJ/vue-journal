@@ -1,19 +1,49 @@
 <template>
-  <div @click=" $router.push({ name: 'entry', params:{id: 10} }) "
+  <div @click=" $router.push({ name: 'entry', params:{id: entry.id} }) "
     class="entry-container mb-3 pointer p-2 mx-2"
   >
     <div class="entry-title d-flex">
       <small>
-        <span class="text-muted text-sm">29</span> -
-        <span class="text-muted text-sm">Agoto</span> - 
-        <span class="text-muted text-sm">2021</span>
+        <span class="text-muted text-sm"> {{day}} <strong>{{month}}</strong> {{yearDay}} </span>
       </small>
     </div>
     <div class="entry-description">
-      Lorem ipsum dolor sit amet consectetur adipisicing elit. Adipisci tempore, eligendi vitae eum cum labore! Hic praesentium aperiam, et, vel voluptate doloremque quam beatae ex nobis rem quidem, atque pariatur?
+      {{ shortText }}
     </div>
   </div>
 </template>
+
+<script>
+import getDate from '../helpers/getDate'
+
+export default {
+  props:{
+    entry:{
+      type: Object,
+      required: true
+    }
+  },
+  computed:{
+    shortText(){
+      return ( this.entry.text.length >= 130 )
+        ? this.entry.text.substring(0, 130) + '...'
+        : this.entry.text
+    },
+    day(){
+      const { day } = getDate( this.entry.date )
+      return day
+    },
+    month(){
+      const { month } = getDate( this.entry.date )
+      return month
+    },
+    yearDay(){
+      const { yearDay } = getDate( this.entry.date )
+      return yearDay
+    },
+  }
+}
+</script>
 
 <style lang="scss" scoped>
  .entry-container{
