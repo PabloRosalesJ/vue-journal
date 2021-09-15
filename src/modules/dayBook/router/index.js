@@ -11,7 +11,6 @@ export default {
     {
       path: ':id',
       name: 'entry',
-      // component: () => import ( /* webpackChunkName: "daybook-entry-show" */ '../components/EntryShow.vue'),
       component: () => import ( /* webpackChunkName: "daybook-entry-show" */ '../views/EntryShow.vue'),
       props: (route) => {
         const {id} = route.params

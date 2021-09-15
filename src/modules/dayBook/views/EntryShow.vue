@@ -6,7 +6,9 @@
     </span>
 
     <div>
-      <div class="btn btn-danger mx-2">
+      <div v-if="entry.id" @click="onDeleteEntry"
+        class="btn btn-danger mx-2"
+      >
         Borrar <i class="fa fa-trash-alt"></i>
       </div>
       <div class="btn btn-primary mx-2">
@@ -26,7 +28,7 @@
       ></textarea>
   </div>
 
-  <Fab icon="fa fa-save"/>
+  <Fab @on:click="saveEntry" icon="fa fa-save"/>
 
   <img class="img-thumbnail" 
     src="https://images.pexels.com/photos/60597/dahlia-red-blossom-bloom-60597.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" 
@@ -38,7 +40,7 @@
 <script>
 
 import { defineAsyncComponent, watch } from '@vue/runtime-core'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import getDate from '../helpers/getDate'
 
 export default {
@@ -60,12 +62,38 @@ export default {
   },
 
   methods:{
+    ...mapActions('journal', ['updateEntries', 'createEntries', 'deleteEntry']),
     loadEntry(){
-      const entry = this.getEntryById( this.id )
       
-      if( !entry ) this.$router.push({ name: 'no-entry' })
+      let entry;
+
+      if (this.id === 'new') {
+        entry = {
+          text: '',
+          date: new Date().getTime()
+        }
+      } else {
+        entry = this.getEntryById( this.id )
+        if( !entry ) this.$router.push({ name: 'no-entry' })
+      }
+
 
       this.entry = entry
+    },
+    async saveEntry(){
+      if ( this.entry.id ) {
+        
+        this.updateEntries( this.entry )
+      } else{
+        
+        const id = await this.createEntries( this.entry )
+        this.$router.push({ name: 'entry', params: {id} })
+      }
+    },
+    async onDeleteEntry(){
+      await this.deleteEntry(this.entry.id)
+
+      this.$router.push({ name: 'no-entry' })
     }
   },
 
