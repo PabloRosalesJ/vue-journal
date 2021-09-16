@@ -6,14 +6,26 @@
     </span>
 
     <div>
-      <div v-if="entry.id" @click="onDeleteEntry"
+      <button v-if="entry.id" @click="onDeleteEntry"
         class="btn btn-danger mx-2"
       >
         Borrar <i class="fa fa-trash-alt"></i>
-      </div>
-      <div class="btn btn-primary mx-2">
+      </button>
+
+      <input 
+        @change="loadImage"
+        v-show="false"
+        ref="imgSelector" 
+        type="file"
+        accept="image/png, image/jpeg"
+      >
+      
+      <button 
+        @click="onSelectImage"
+        class="btn btn-primary mx-2"
+      >
         Subir foto <i class="fa fa-upload"></i>
-      </div>
+      </button>
     </div>
 
   </div>
@@ -30,18 +42,30 @@
 
   <Fab @on:click="saveEntry" icon="fa fa-save"/>
 
-  <img class="img-thumbnail" 
-    src="https://images.pexels.com/photos/60597/dahlia-red-blossom-bloom-60597.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" 
-    alt=""
+  <img 
+    v-if="entry.picture && !localImage"
+    :src="entry.picture" 
+    class="img-thumbnail" 
+    alt="image"
+  >
+
+  <img 
+    v-if="localImage"
+    :src="localImage" 
+    class="img-thumbnail" 
+    alt="image"
   >
 
 </template>
 
 <script>
 
-import { defineAsyncComponent, watch } from '@vue/runtime-core'
-import { mapGetters, mapActions } from 'vuex'
+import Swal from 'sweetalert2'
 import getDate from '../helpers/getDate'
+import { mapGetters, mapActions } from 'vuex'
+import { defineAsyncComponent } from '@vue/runtime-core'
+
+import uploadImage from '@/helpers/uploadImage'
 
 export default {
   components: {
@@ -57,7 +81,9 @@ export default {
 
   data() {
     return {
-      entry: null
+      entry: null,
+      localImage: null,
+      file: null,
     }
   },
 
@@ -80,7 +106,19 @@ export default {
 
       this.entry = entry
     },
+
     async saveEntry(){
+
+      new Swal({
+        title: 'Espere por favor',
+        allowOutsideClick: false
+      })
+
+      Swal.showLoading()
+
+      const picture = await uploadImage(this.file)
+      this.entry.picture = picture
+
       if ( this.entry.id ) {
         
         this.updateEntries( this.entry )
@@ -89,11 +127,59 @@ export default {
         const id = await this.createEntries( this.entry )
         this.$router.push({ name: 'entry', params: {id} })
       }
-    },
-    async onDeleteEntry(){
-      await this.deleteEntry(this.entry.id)
 
-      this.$router.push({ name: 'no-entry' })
+      this.file = null
+      Swal.fire('Guardado', 'Entrada guardada exitosamente', 'success')
+    },
+
+    async onDeleteEntry(){
+
+      const { isConfirmed } = await Swal.fire({
+        icon: 'question',
+        title: '¿Está seguro?',
+        text: 'Una vez borrado, no se podrá recuperar',
+        showDenyButton: true,
+        confirmButtonText: 'Si, estoy seguro'
+      })
+
+      if ( isConfirmed ) {
+
+        new Swal({
+          title: 'Espere por favor',
+          allowOutsideClick: false
+        })
+
+        Swal.showLoading()
+
+        await this.deleteEntry(this.entry.id)
+        this.$router.push({ name: 'no-entry' })
+
+        Swal.fire('Eliminado', '', 'success')
+      }
+
+
+    },
+
+    loadImage( event ){
+      const file = event.target.files[0]
+
+      if ( !file ) {
+        
+        this.file = null
+        this.localImage = null
+        return
+      }
+
+      this.file = file
+
+      const fr = new FileReader()
+      fr.onload = () => this.localImage = fr.result
+      fr.readAsDataURL( file )
+
+    },
+
+    onSelectImage(){
+      this.$refs.imgSelector.click()
     }
   },
 
