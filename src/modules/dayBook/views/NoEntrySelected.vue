@@ -12,7 +12,7 @@ import { defineAsyncComponent } from '@vue/runtime-core'
 
 export default {
   components:{
-    Fab: defineAsyncComponent(() => import(/* webpackChunkName: "fab" */ '../components/fab.vue'))
+    Fab: defineAsyncComponent(() => import(/* webpackChunkName: "fab" */ '../components/Fab.vue'))
   },
   methods: {
     newEntry(){

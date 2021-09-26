@@ -69,7 +69,7 @@ import uploadImage from '@/helpers/uploadImage'
 
 export default {
   components: {
-    Fab: defineAsyncComponent(() => import('../components/fab.vue'))
+    Fab: defineAsyncComponent(() => import('../components/Fab.vue'))
   },
 
   props: {
